@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jet Lag – Zone 1 Hide & Seek Map (200m)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1a1a2e; color: #fff; }
+    header {
+      padding: 12px 16px;
+      background: #16213e;
+      border-bottom: 1px solid #0f3460;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    header h1 { font-size: 16px; font-weight: 700; color: #e85d26; }
+    header p { font-size: 12px; color: #aaa; margin-top: 2px; }
+    #map {
+      width: 100%;
+      height: calc(100vh - 60px);
+    }
+    .legend {
+      background: rgba(22, 33, 62, 0.92);
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #ddd;
+      pointer-events: none;
+    }
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+    .legend-row:last-child { margin-bottom: 0; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; background: #e85d26; flex-shrink: 0; }
+    .ring { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #e85d26; flex-shrink: 0; }
+    .dashed { width: 18px; height: 0; border-top: 2px dashed #4a90d9; flex-shrink: 0; }
+    .leaflet-popup-content-wrapper { border-radius: 8px; }
+    .popup-title { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+    .popup-sub { font-size: 12px; color: #888; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🚇 Jet Lag – Zone 1 Hide &amp; Seek</h1>
+    <p>London Underground Zone 1 · 200m hiding buffers · Tap a stop for details</p>
+  </div>
+</header>
+
+<div id="map"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const stops = [
+  ["Aldgate", 51.5143, -0.0755],
+  ["Aldgate East", 51.5153, -0.0726],
+  ["Angel", 51.5322, -0.1058],
+  ["Baker Street", 51.5226, -0.1571],
+  ["Bank / Monument", 51.5133, -0.0886],
+  ["Barbican", 51.5204, -0.0979],
+  ["Battersea Power Station", 51.4827, -0.1444],
+  ["Bayswater", 51.5121, -0.1876],
+  ["Blackfriars", 51.5119, -0.1037],
+  ["Bond Street", 51.5142, -0.1494],
+  ["Borough", 51.5011, -0.0942],
+  ["Cannon Street", 51.5113, -0.0904],
+  ["Chancery Lane", 51.5185, -0.1112],
+  ["Charing Cross", 51.5081, -0.1247],
+  ["Covent Garden", 51.5129, -0.1243],
+  ["Edgware Road (Bakerloo)", 51.5230, -0.1669],
+  ["Edgware Road (Circle)", 51.5204, -0.1679],
+  ["Elephant & Castle", 51.4944, -0.1001],
+  ["Embankment", 51.5073, -0.1223],
+  ["Euston", 51.5282, -0.1337],
+  ["Euston Square", 51.5261, -0.1358],
+  ["Farringdon", 51.5203, -0.1053],
+  ["Gloucester Road", 51.4945, -0.1827],
+  ["Goodge Street", 51.5209, -0.1347],
+  ["Great Portland Street", 51.5239, -0.1438],
+  ["Green Park", 51.5067, -0.1428],
+  ["High Street Kensington", 51.5008, -0.1920],
+  ["Holborn", 51.5174, -0.1200],
+  ["Hyde Park Corner", 51.5027, -0.1527],
+  ["King's Cross St. Pancras", 51.5308, -0.1238],
+  ["Knightsbridge", 51.5016, -0.1606],
+  ["Lambeth North", 51.4985, -0.1114],
+  ["Lancaster Gate", 51.5121, -0.1754],
+  ["Leicester Square", 51.5113, -0.1281],
+  ["Liverpool Street", 51.5178, -0.0823],
+  ["London Bridge", 51.5054, -0.0861],
+  ["Mansion House", 51.5122, -0.0942],
+  ["Marble Arch", 51.5136, -0.1586],
+  ["Marylebone", 51.5226, -0.1631],
+  ["Moorgate", 51.5185, -0.0886],
+  ["Nine Elms", 51.4831, -0.1270],
+  ["Notting Hill Gate", 51.5094, -0.1967],
+  ["Old Street", 51.5257, -0.0873],
+  ["Oxford Circus", 51.5154, -0.1416],
+  ["Paddington", 51.5154, -0.1755],
+  ["Piccadilly Circus", 51.5098, -0.1342],
+  ["Pimlico", 51.4893, -0.1334],
+  ["Queensway", 51.5107, -0.1872],
+  ["Regent's Park", 51.5234, -0.1466],
+  ["Russell Square", 51.5228, -0.1242],
+  ["Sloane Square", 51.4924, -0.1565],
+  ["South Kensington", 51.4941, -0.1742],
+  ["Southwark", 51.5043, -0.1053],
+  ["St. James's Park", 51.4994, -0.1335],
+  ["St. Paul's", 51.5148, -0.0973],
+  ["Temple", 51.5112, -0.1141],
+  ["Tottenham Court Road", 51.5165, -0.1306],
+  ["Tower Hill", 51.5098, -0.0766],
+  ["Vauxhall", 51.4859, -0.1236],
+  ["Victoria", 51.4965, -0.1447],
+  ["Warren Street", 51.5248, -0.1384],
+  ["Waterloo", 51.5036, -0.1143],
+  ["Westminster", 51.5009, -0.1248],
+];
+
+function convexHull(points) {
+  points = points.slice().sort((a,b) => a[0]-b[0] || a[1]-b[1]);
+  const cross = (O,A,B) => (A[0]-O[0])*(B[1]-O[1])-(A[1]-O[1])*(B[0]-O[0]);
+  const lower = [];
+  for (const p of points) {
+    while (lower.length >= 2 && cross(lower[lower.length-2], lower[lower.length-1], p) <= 0) lower.pop();
+    lower.push(p);
+  }
+  const upper = [];
+  for (let i = points.length-1; i >= 0; i--) {
+    const p = points[i];
+    while (upper.length >= 2 && cross(upper[upper.length-2], upper[upper.length-1], p) <= 0) upper.pop();
+    upper.push(p);
+  }
+  upper.pop(); lower.pop();
+  return lower.concat(upper);
+}
+
+const map = L.map('map').setView([51.505, -0.130], 13);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: 19
+}).addTo(map);
+
+const BUFFER_M = 200;
+const hullInput = [];
+
+stops.forEach(([name, lat, lng]) => {
+  const dLat = BUFFER_M / 111320;
+  const dLng = BUFFER_M / (111320 * Math.cos(lat * Math.PI / 180));
+  const N = 32;
+  const ring = Array.from({length: N}, (_, i) => {
+    const a = (2 * Math.PI * i) / N;
+    return [lat + dLat * Math.sin(a), lng + dLng * Math.cos(a)];
+  });
+  ring.forEach(p => hullInput.push(p));
+
+  L.circle([lat, lng], {
+    radius: BUFFER_M,
+    color: '#e85d26', weight: 1.5,
+    fillColor: '#e85d26', fillOpacity: 0.12, opacity: 0.7
+  }).addTo(map);
+
+  L.circleMarker([lat, lng], {
+    radius: 5, color: '#fff', weight: 1.5,
+    fillColor: '#e85d26', fillOpacity: 1
+  }).addTo(map).bindPopup(`
+    <div class="popup-title">${name}</div>
+    <div class="popup-sub">Zone 1 · 200m hiding zone</div>
+  `);
+});
+
+const hull = convexHull(hullInput);
+L.polygon(hull, {
+  color: '#4a90d9', weight: 2.5,
+  fillColor: '#4a90d9', fillOpacity: 0.05,
+  dashArray: '7 5', opacity: 0.9
+}).addTo(map).bindPopup('<div class="popup-title">Play Area Boundary</div><div class="popup-sub">Convex hull of all 200m buffers</div>');
+
+// Legend control
+const legend = L.control({ position: 'bottomleft' });
+legend.onAdd = () => {
+  const div = L.DomUtil.create('div', 'legend');
+  div.innerHTML = `
+    <div class="legend-row"><span class="dot"></span> Tube stop</div>
+    <div class="legend-row"><span class="ring"></span> 200m hiding zone</div>
+    <div class="legend-row"><span class="dashed"></span> Play area boundary</div>
+  `;
+  return div;
+};
+legend.addTo(map);
+
+const allLats = hullInput.map(p => p[0]);
+const allLngs = hullInput.map(p => p[1]);
+map.fitBounds([
+  [Math.min(...allLats) - 0.004, Math.min(...allLngs) - 0.006],
+  [Math.max(...allLats) + 0.004, Math.max(...allLngs) + 0.006]
+]);
+</script>
+</body>
+</html>

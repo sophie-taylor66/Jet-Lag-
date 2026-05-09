@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jet Lag – Zone 1 Hide & Seek Map (250m)</title>
+  <title>Jet Lag – Zone 1 Hide & Seek Map (300m)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -51,7 +51,7 @@
 <header>
   <div>
     <h1>🚇 Jet Lag – Zone 1 Hide &amp; Seek</h1>
-    <p>London Underground Zone 1 · 250m hiding buffers · Tap a stop for details</p>
+    <p>London Underground Zone 1 · 300m hiding buffers · Tap a stop for details</p>
   </div>
 </header>
 
@@ -150,7 +150,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19
 }).addTo(map);
 
-const BUFFER_M = 250;
+const BUFFER_M = 300;
 const hullInput = [];
 
 stops.forEach(([name, lat, lng]) => {
@@ -174,7 +174,7 @@ stops.forEach(([name, lat, lng]) => {
     fillColor: '#e85d26', fillOpacity: 1
   }).addTo(map).bindPopup(`
     <div class="popup-title">${name}</div>
-    <div class="popup-sub">Zone 1 · 250m hiding zone</div>
+    <div class="popup-sub">Zone 1 · 300m hiding zone</div>
   `);
 });
 
@@ -183,7 +183,7 @@ L.polygon(hull, {
   color: '#4a90d9', weight: 2.5,
   fillColor: '#4a90d9', fillOpacity: 0.05,
   dashArray: '7 5', opacity: 0.9
-}).addTo(map).bindPopup('<div class="popup-title">Play Area Boundary</div><div class="popup-sub">Convex hull of all 250m buffers</div>');
+}).addTo(map).bindPopup('<div class="popup-title">Play Area Boundary</div><div class="popup-sub">Convex hull of all 300m buffers</div>');
 
 // Legend control
 const legend = L.control({ position: 'bottomleft' });
@@ -191,7 +191,7 @@ legend.onAdd = () => {
   const div = L.DomUtil.create('div', 'legend');
   div.innerHTML = `
     <div class="legend-row"><span class="dot"></span> Tube stop</div>
-    <div class="legend-row"><span class="ring"></span> 250m hiding zone</div>
+    <div class="legend-row"><span class="ring"></span> 300m hiding zone</div>
     <div class="legend-row"><span class="dashed"></span> Play area boundary</div>
   `;
   return div;
